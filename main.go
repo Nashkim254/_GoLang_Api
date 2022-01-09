@@ -38,16 +38,18 @@ func main() {
 }
 func handleRequest() {
 	r := mux.NewRouter()
-	r.HandleFunc("/", homePage)
-	r.HandleFunc("/all", getAllArticles)
-	r.HandleFunc("/create",createArticle)
-	r.HandleFunc("/get",getOneArticle)
-	r.HandleFunc("/update", updateArticle)
-	r.HandleFunc("/delete",deleteArticle)
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	r.HandleFunc("/", homePage).Methods("GET")
+	r.HandleFunc("/all", getAllArticles).Methods("GET")
+	r.HandleFunc("/create", createArticle).Methods("POST")
+	r.HandleFunc("/get/{id}", getOneArticle).Methods("GET")
+	r.HandleFunc("/update/{id}", updateArticle).Methods("PUT")
+	r.HandleFunc("/delete/{id}", deleteArticle).Methods("DELETE")
+
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 func getAllArticles(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get all Articles")
 	w.Header().Set("Content-Type", "application/json")
 	articles = append(articles, Article{Id: "0", Title: "Hello", Desc: "Article Description", Content: "Article Content"})
 	articles = append(articles, Article{Id: "1", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"})
@@ -57,6 +59,7 @@ func getAllArticles(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOneArticle(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get one Articles")
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	articleId := params["id"]
@@ -71,6 +74,7 @@ func getOneArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func createArticle(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: create")
 	w.Header().Set("Content-Type", "application/json")
 
 	//if body is empty
@@ -93,17 +97,18 @@ func createArticle(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func updateArticle (w http.ResponseWriter , r *http.Request){
+func updateArticle(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: update")
 	w.Header().Set("Content-Type", "application/json")
 
-	//grab id 
+	//grab id
 	params := mux.Vars(r)
 	myId := params["id"]
 
 	//loop through the slice
-	for index, article := range articles{
-		if(article.Id == myId){
-			articles = append(articles[:index], articles[index+1:]... )
+	for index, article := range articles {
+		if article.Id == myId {
+			articles = append(articles[:index], articles[index+1:]...)
 			var article Article
 			_ = json.NewDecoder(r.Body).Decode(&article)
 			article.Id = myId
@@ -117,7 +122,8 @@ func updateArticle (w http.ResponseWriter , r *http.Request){
 	}
 }
 
-func deleteArticle(w http.ResponseWriter, r *http.Request){
+func deleteArticle(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: delete")
 	w.Header().Set("Content-Type", "application/json")
 
 	//grab id
@@ -125,8 +131,8 @@ func deleteArticle(w http.ResponseWriter, r *http.Request){
 	myId := params["id"]
 
 	//loop through slice
-	for index, article := range articles{
-		if(article.Id == myId){
+	for index, article := range articles {
+		if article.Id == myId {
 			articles = append(articles[:index], articles[index+1:]...)
 			break
 		}
