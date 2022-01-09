@@ -41,6 +41,9 @@ func handleRequest() {
 	r.HandleFunc("/", homePage)
 	r.HandleFunc("/all", getAllArticles)
 	r.HandleFunc("/create",createArticle)
+	r.HandleFunc("/get",getOneArticle)
+	r.HandleFunc("/update", updateArticle)
+	r.HandleFunc("/delete",deleteArticle)
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
@@ -91,5 +94,41 @@ func createArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateArticle (w http.ResponseWriter , r *http.Request){
-	
+	w.Header().Set("Content-Type", "application/json")
+
+	//grab id 
+	params := mux.Vars(r)
+	myId := params["id"]
+
+	//loop through the slice
+	for index, article := range articles{
+		if(article.Id == myId){
+			articles = append(articles[:index], articles[index+1:]... )
+			var article Article
+			_ = json.NewDecoder(r.Body).Decode(&article)
+			article.Id = myId
+			articles = append(articles, article)
+			json.NewEncoder(w).Encode(article)
+			return
+		}
+		//if not found
+		json.NewEncoder(w).Encode("Not found")
+		return
+	}
+}
+
+func deleteArticle(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+
+	//grab id
+	params := mux.Vars(r)
+	myId := params["id"]
+
+	//loop through slice
+	for index, article := range articles{
+		if(article.Id == myId){
+			articles = append(articles[:index], articles[index+1:]...)
+			break
+		}
+	}
 }
